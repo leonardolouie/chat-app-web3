@@ -8,9 +8,10 @@ import {
   useWatchContractEvent,
 } from "wagmi";
 import { Log } from "viem";
-
-const chatterJson = require("../../chatter-contracts/artifacts/contracts/Chatter.sol/Chatter.json");
-const chatterAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+import JazziconImage from "./components/Jazzicon";
+import ChatMessage from "./components/ChatMessage";
+const chatterJson = require("../../contract/artifacts/contracts/Chatter.sol/Chatter.json");
+const chatterAddress = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
 
 export default function Home() {
   const [message, setMessage] = useState<string>("");
@@ -24,7 +25,7 @@ export default function Home() {
         const events = await publicClient?.getContractEvents({
           address: chatterAddress,
           abi: chatterJson.abi,
-          eventName: "Message",
+          eventName: "Mess  age",
           fromBlock: BigInt("0"),
           toBlock: "latest",
         });
@@ -43,7 +44,20 @@ export default function Home() {
 
     onLogs(logs) {
       console.log("New logs!", logs);
-      setMessages((oldLogs) => (oldLogs ? [...oldLogs, ...logs] : [...logs]));
+
+      setMessages((oldLogs) => {
+        // Filter out logs that are already in oldLogs based on unique criteria (e.g., log transaction hash or log index)
+
+        if (oldLogs) {
+          const newLogs = logs.filter(
+            (newLog) =>
+              !oldLogs.some(
+                (oldLog) => oldLog.transactionHash === newLog.transactionHash
+              )
+          );
+          return newLogs.length ? [...oldLogs, ...newLogs] : oldLogs;
+        }
+      });
     },
   });
 
@@ -66,11 +80,9 @@ export default function Home() {
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <div>
           Messages
-          {messages?.map((log: any, i) => (
-            <div key={i}>
-              {log.args.sender} - {log.args.message}
-            </div>
-          ))}
+          {messages && messages?.length > 0 && (
+            <ChatMessage messages={messages} />
+          )}
         </div>
         <div>
           <input
