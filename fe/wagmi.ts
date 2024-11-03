@@ -1,12 +1,5 @@
 import { getDefaultConfig, Chain } from "@rainbow-me/rainbowkit";
-import {
-  arbitrum,
-  base,
-  mainnet,
-  optimism,
-  polygon,
-  sepolia,
-} from "wagmi/chains";
+import { mainnet, sepolia } from "wagmi/chains";
 
 const localChain: Chain = {
   id: 31337, //hardhat node chain
@@ -25,10 +18,6 @@ const localChain: Chain = {
 export const config = getDefaultConfig({
   appName: "RainbowKit demo",
   projectId: "YOUR_PROJECT_ID",
-  chains: [
-    localChain,
-    mainnet,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [sepolia] : []),
-  ],
+  chains: [localChain, mainnet, sepolia],
   ssr: true,
 });
