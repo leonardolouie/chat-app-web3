@@ -3,9 +3,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import ChatBox from "../components/ChatBox";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-
 import { useEthersProvider } from "../lib/ethers";
-import { Presets, Client } from "userop";
 
 const rpcUrl = "https://public.stackup.sh/api/v1/node/ethereum-sepolia";
 const paymasterUrl = ""; // Optional - you can get one at https://app.stackup.sh/
@@ -21,13 +19,6 @@ export default function Home() {
     console.log("useSmartWallet", useSmartWallet);
 
     if (useSmartWallet && signer) {
-
-
-
-
-      var builder = Presets.Builder.SimpleAccount.init(signer, rpcUrl, opts);
-      const address = builder.getSender();
-      console.log(`Account address: ${address}`);
     } else {
       setConnectedAddress(address);
     }

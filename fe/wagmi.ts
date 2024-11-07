@@ -18,6 +18,6 @@ const localChain: Chain = {
 export const config = getDefaultConfig({
   appName: "RainbowKit demo",
   projectId: "YOUR_PROJECT_ID",
-  chains: [localChain, mainnet, sepolia],
+  chains: [sepolia, localChain, mainnet],
   ssr: true,
 });

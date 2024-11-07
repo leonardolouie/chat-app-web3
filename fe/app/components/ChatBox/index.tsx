@@ -2,45 +2,33 @@
 import { Log } from "viem";
 import ChatMessage from "../ChatMessage";
 import { useEffect, useState } from "react";
-
 import {
   useWriteContract,
   usePublicClient,
   useWatchContractEvent,
+  useBlockNumber,
 } from "wagmi";
+
 const chatterJson = require("../../../../contract/artifacts/contracts/Chatter.sol/Chatter.json");
-const chatterAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+const chatterAddress: any = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 const ChatBoxComponent: React.FC = () => {
+  // const latestBlock = useBlockNumber();
   const [message, setMessage] = useState("");
   const { writeContract } = useWriteContract();
   const publicClient = usePublicClient();
   const [messages, setMessages] = useState<Log[]>();
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const events = await publicClient?.getContractEvents({
-          address: chatterAddress,
-          abi: chatterJson.abi,
-          eventName: "Message",
-          fromBlock: BigInt("0"),
-          toBlock: "latest",
-        });
-        setMessages(events);
-      } catch (error) {
-        console.error("Error fetching contract events:", error);
-      }
-    };
-    fetchMessages();
-  }, []);
-
+  // console.log(latestBlock.data, "latestBlock");
   useWatchContractEvent({
     address: chatterAddress,
     abi: chatterJson.abi,
     eventName: "Message",
+    fromBlock: BigInt(0),
     onLogs(logs) {
+      console.log(logs, "moto");
       setMessages((oldLogs) => {
+        console.log(oldLogs, "oldLogs");
         const newLogs = logs.filter(
           (newLog) =>
             !oldLogs?.some(
@@ -51,6 +39,29 @@ const ChatBoxComponent: React.FC = () => {
       });
     },
   });
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        if (chatterAddress) {
+          const events = await publicClient?.getContractEvents({
+            address: chatterAddress,
+            abi: chatterJson.abi,
+            eventName: "Message",
+            fromBlock: BigInt("0"),
+            toBlock: "latest",
+          });
+          setMessages(events);
+        } else {
+          console.warn(`Warning address is not found ${chatterAddress}`);
+        }
+      } catch (error) {
+        console.error("Error fetching contract events:", error);
+      }
+    };
+
+    fetchMessages();
+  }, []);
 
   const sendMessage = async (e: any) => {
     e.preventDefault();
@@ -67,27 +78,43 @@ const ChatBoxComponent: React.FC = () => {
 
   return (
     <>
-      <div>
-        Messages
+      <div className="w-full max-w-7xl">
         {messages && messages?.length > 0 && (
           <ChatMessage messages={messages} />
         )}
       </div>
       <div className="flex h-12 w-full">
-        <input
-          className="shadow appearance-none w-full py-2 px-3  dark:text-white leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-900 rounded-tl-sm rounded-b-sm"
-          type="text"
-          name="send-message"
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message here"
-        />
-        <button
-          className="w-1/3 dark:bg-gray-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-tr-sm rounded-b-sm text-sm"
-          onClick={(e) => sendMessage(e)}
-          type="button"
-        >
-          Send
-        </button>
+        <form className="w-full">
+          <label htmlFor="chat" className="sr-only">
+            Your message
+          </label>
+          <div className="flex items-center px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700">
+            <textarea
+              name="send-message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              id="chat"
+              rows={1}
+              className="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Your message..."
+            />
+            <button
+              onClick={(e) => sendMessage(e)}
+              className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
+            >
+              <svg
+                className="w-5 h-5 rotate-90 rtl:-rotate-90"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 18 20"
+              >
+                <path d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
+              </svg>
+              <span className="sr-only">Send message</span>
+            </button>
+          </div>
+        </form>
       </div>
     </>
   );
