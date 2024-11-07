@@ -6,27 +6,24 @@ import {
   useWriteContract,
   usePublicClient,
   useWatchContractEvent,
-  useBlockNumber,
 } from "wagmi";
 
-const chatterJson = require("../../../../contract/artifacts/contracts/Chatter.sol/Chatter.json");
+import { contractAbi } from "@/utils/web3";
 const chatterAddress: any = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 const ChatBoxComponent: React.FC = () => {
-  // const latestBlock = useBlockNumber();
   const [message, setMessage] = useState("");
   const { writeContract } = useWriteContract();
   const publicClient = usePublicClient();
   const [messages, setMessages] = useState<Log[]>();
+  const [latestBlock, setLatestBlock] = useState<bigint>();
 
-  // console.log(latestBlock.data, "latestBlock");
   useWatchContractEvent({
     address: chatterAddress,
-    abi: chatterJson.abi,
+    abi: contractAbi,
     eventName: "Message",
-    fromBlock: BigInt(0),
+    fromBlock: latestBlock ? latestBlock : BigInt("0"),
     onLogs(logs) {
-      console.log(logs, "moto");
       setMessages((oldLogs) => {
         console.log(oldLogs, "oldLogs");
         const newLogs = logs.filter(
@@ -38,6 +35,7 @@ const ChatBoxComponent: React.FC = () => {
         return newLogs.length ? [...(oldLogs || []), ...newLogs] : oldLogs;
       });
     },
+    pollingInterval: 20_000, // needs to change this to websocket
   });
 
   useEffect(() => {
@@ -46,12 +44,21 @@ const ChatBoxComponent: React.FC = () => {
         if (chatterAddress) {
           const events = await publicClient?.getContractEvents({
             address: chatterAddress,
-            abi: chatterJson.abi,
+            abi: contractAbi,
             eventName: "Message",
             fromBlock: BigInt("0"),
             toBlock: "latest",
           });
+
           setMessages(events);
+          if (events && events.length > 0) {
+            // Get the latest block number from the events array
+            const latestBlock = events[events.length - 1].blockNumber;
+            setLatestBlock(latestBlock);
+            console.log(`Latest block with events: ${latestBlock}`);
+          } else {
+            console.log("No new events found");
+          }
         } else {
           console.warn(`Warning address is not found ${chatterAddress}`);
         }
@@ -68,7 +75,7 @@ const ChatBoxComponent: React.FC = () => {
     if (message && message.length > 0) {
       await writeContract({
         address: chatterAddress,
-        abi: chatterJson.abi,
+        abi: contractAbi,
         functionName: "sendMessage",
         args: [message],
       });
