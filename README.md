@@ -13,7 +13,7 @@ This project is a Web3 chat application built with the following technologies:
 
 You can try the app live here:
 
-[Web3 Chat App](https://chat-app-web3-git-main-leonardo-louie-ordonezs-projects.vercel.app/)
+[Web3 Chat App](https://chat-app-web3-kappa.vercel.app/)
 
 ## Sepolia Contract Address
 
