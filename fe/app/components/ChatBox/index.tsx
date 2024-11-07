@@ -67,7 +67,7 @@ const ChatBoxComponent: React.FC = () => {
     };
 
     fetchMessages();
-  }, [publicClient]);
+  }, []);
 
   const sendMessage = async (
     e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
