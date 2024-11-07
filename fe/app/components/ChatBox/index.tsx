@@ -1,7 +1,7 @@
 "use client";
 import { Log } from "viem";
 import ChatMessage from "../ChatMessage";
-import { useEffect, useState } from "react";
+import { useEffect, useState, MouseEvent } from "react";
 import {
   useWriteContract,
   usePublicClient,
@@ -25,7 +25,6 @@ const ChatBoxComponent: React.FC = () => {
     fromBlock: latestBlock ? latestBlock : BigInt("0"),
     onLogs(logs) {
       setMessages((oldLogs) => {
-        console.log(oldLogs, "oldLogs");
         const newLogs = logs.filter(
           (newLog) =>
             !oldLogs?.some(
@@ -68,9 +67,11 @@ const ChatBoxComponent: React.FC = () => {
     };
 
     fetchMessages();
-  }, []);
+  }, [publicClient]);
 
-  const sendMessage = async (e: any) => {
+  const sendMessage = async (
+    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
     e.preventDefault();
     if (message && message.length > 0) {
       await writeContract({
